@@ -1,6 +1,8 @@
 library(openintro)
 loans <- loans_full_schema
 
+
+
 project <- subset.data.frame(loans, select = c(interest_rate, grade, annual_income, total_credit_lines, num_historical_failed_to_pay, total_credit_limit, debt_to_income, installment, loan_purpose, term, application_type, homeownership, loan_amount, public_record_bankrupt, total_credit_utilized, num_total_cc_accounts))
 
 # Find missing elements using is.na()
