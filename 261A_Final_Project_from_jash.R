@@ -23,12 +23,15 @@ project <- na.omit(project)
 
 #fit the full model
 fit.full <- lm(interest_rate ~ grade + annual_income + total_credit_lines + 
-            as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income + 
-            installment + loan_purpose + term + application_type + 
+            as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income  + loan_purpose + term + application_type + 
             homeownership + loan_amount + as.factor(public_record_bankrupt) + 
             total_credit_utilized + num_total_cc_accounts, data = project)
 summary(fit.full)
 #plot(project)
+
+#VIFs
+library(car)
+vif(fit.full)
 
 # Assuming lm_model is your linear regression model
 residuals <- residuals(fit.full)
@@ -87,8 +90,7 @@ project$annual_income_log <- log(project$annual_income)
 
 # (Optional) Fit the model with the transformed 'annual_income'
 fit <- lm(interest_rate ~ grade + annual_income_log + total_credit_lines + 
-            as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income + 
-            installment + loan_purpose + term + application_type + 
+            as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income  + loan_purpose + term + application_type + 
             homeownership + loan_amount + as.factor(public_record_bankrupt) + 
             total_credit_utilized + num_total_cc_accounts, 
           data = project)
@@ -113,8 +115,7 @@ project <- na.omit(project)
 
 # (Optional) Fit the model with the transformed 'annual_income'
 fit <- lm(interest_rate ~ grade + annual_income_log + total_credit_lines + 
-            as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-            installment + loan_purpose + term + application_type + 
+            as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income  + loan_purpose + term + application_type + 
             homeownership + loan_amount + as.factor(public_record_bankrupt) + 
             total_credit_utilized + num_total_cc_accounts, 
           data = project)
@@ -136,84 +137,73 @@ library(MASS)
 boxcox(fit, lambda = seq(-1,1 , by = 0.1))
 
 fit <- lm(I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_lines + 
-            as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-            installment + loan_purpose + term + application_type + 
+            as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + 
             homeownership + loan_amount + as.factor(public_record_bankrupt) + 
             total_credit_utilized + num_total_cc_accounts, 
           data = project)
 
 fit.f0 <- lm(I(interest_rate^0.5) ~ 1, data = project)
 add1(fit.f0, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_lines + 
-       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 # add grade
 fit.f1 <- lm(I(interest_rate^0.5) ~ grade, data = project)
 add1(fit.f1, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_lines + 
-       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 #add total_credit_limit_log
 fit.f2 <- lm(I(interest_rate^0.5) ~ grade + total_credit_limit_log, data = project)
 add1(fit.f2, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_lines + 
-       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 #add term
 fit.f3 <- lm(I(interest_rate^0.5) ~ grade + total_credit_limit_log + term, data = project)
 add1(fit.f3, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_lines + 
-       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 # add debt_to_income
 fit.f4 <- lm(I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + term, data = project)
 add1(fit.f4, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_lines + 
-       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income  + loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 # add total_credit_utilized
 fit.f5 <- lm(I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + term + 
                total_credit_utilized, data = project)
 add1(fit.f5, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_lines + 
-       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income  + loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 # add num_total_cc_accounts
 fit.f6 <- lm(I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + term + 
                total_credit_utilized + num_total_cc_accounts, data = project)
 add1(fit.f6, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_lines + 
-       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 # add loan_amount
 fit.f7 <- lm(I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + term + 
                loan_amount + total_credit_utilized + num_total_cc_accounts, data = project)
 add1(fit.f7, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_lines + 
-       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 # add installment
-fit.f8 <- lm(I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + installment + term + 
+fit.f8 <- lm(I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + term + 
                loan_amount + total_credit_utilized + num_total_cc_accounts, data = project)
 add1(fit.f8, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_lines + 
-       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 # add loan_purpose
-fit.f9 <- lm(I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + installment + loan_purpose + 
+fit.f9 <- lm(I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + loan_purpose + 
                term + loan_amount + total_credit_utilized + num_total_cc_accounts, data = project)
 add1(fit.f9, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_lines + 
-       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 
@@ -221,75 +211,61 @@ library(leaps)
 # Double check order in which to add, since a lot of the p-values are the same.
 forward.selection <- regsubsets(x = cbind(project$grade , project$annual_income_log , project$total_credit_lines , 
                                             as.factor(project$num_historical_failed_to_pay) , project$total_credit_limit_log , project$debt_to_income , 
-                                            project$installment , project$loan_purpose , project$term , project$application_type , 
+                                            project$loan_purpose , project$term , project$application_type , 
                                             project$homeownership , project$loan_amount , as.factor(project$public_record_bankrupt) , 
                                             project$total_credit_utilized , project$num_total_cc_accounts), y = I(project$interest_rate^0.5), method = "forward")
 summary(forward.selection)
 
 #backwards selection
 fit.b0 <- lm(I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_lines + 
-               as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-               installment + loan_purpose + term + application_type + 
+               as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + 
                homeownership + loan_amount + as.factor(public_record_bankrupt) + 
                total_credit_utilized + num_total_cc_accounts, data = project)
 drop1(fit.b0, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_lines + 
-        as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-        installment + loan_purpose + term + application_type + 
+        as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income  + loan_purpose + term + application_type + 
         homeownership + loan_amount + as.factor(public_record_bankrupt) + 
         total_credit_utilized + num_total_cc_accounts, test = "F")
 # remove total_credit_lines
 fit.b1 <- lm(I(interest_rate^0.5) ~ grade + annual_income_log + 
-               as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-               installment + loan_purpose + term + application_type + 
+               as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + 
                homeownership + loan_amount + as.factor(public_record_bankrupt) + 
                total_credit_utilized + num_total_cc_accounts, data = project)
 drop1(fit.b1, I(interest_rate^0.5) ~ grade + annual_income_log + 
-        as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
-        installment + loan_purpose + term + application_type + 
+        as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income  + loan_purpose + term + application_type + 
         homeownership + loan_amount + as.factor(public_record_bankrupt) + 
         total_credit_utilized + num_total_cc_accounts, test = "F")
 # remove as.factor(num_historical_failed_to_pay)
-fit.b2 <- lm(I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_limit_log + debt_to_income + 
-               installment + loan_purpose + term + application_type + 
+fit.b2 <- lm(I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + 
                homeownership + loan_amount + as.factor(public_record_bankrupt) + 
                total_credit_utilized + num_total_cc_accounts, data = project)
-drop1(fit.b2, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_limit_log + debt_to_income + 
-        installment + loan_purpose + term + application_type + 
+drop1(fit.b2, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + 
         homeownership + loan_amount + as.factor(public_record_bankrupt) + 
         total_credit_utilized + num_total_cc_accounts, test = "F")
 # remove homeownership
-fit.b3 <- lm(I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_limit_log + debt_to_income + 
-               installment + loan_purpose + term + application_type + loan_amount + as.factor(public_record_bankrupt) + 
+fit.b3 <- lm(I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + loan_amount + as.factor(public_record_bankrupt) + 
                total_credit_utilized + num_total_cc_accounts, data = project)
-drop1(fit.b3, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_limit_log + debt_to_income + 
-        installment + loan_purpose + term + application_type + loan_amount + as.factor(public_record_bankrupt) + 
+drop1(fit.b3, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + loan_amount + as.factor(public_record_bankrupt) + 
         total_credit_utilized + num_total_cc_accounts, test = "F")
 # remove as.factor(public_record_bankrupt)
-fit.b4 <- lm(I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_limit_log + debt_to_income + 
-               installment + loan_purpose + term + application_type + loan_amount + 
+fit.b4 <- lm(I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + loan_amount + 
                total_credit_utilized + num_total_cc_accounts, data = project)
-drop1(fit.b4, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_limit_log + debt_to_income + 
-        installment + loan_purpose + term + application_type + loan_amount + 
+drop1(fit.b4, I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + loan_amount + 
         total_credit_utilized + num_total_cc_accounts, test = "F")
 # remove annual_income_log
-fit.b5 <- lm(I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + 
-               installment + loan_purpose + term + application_type + loan_amount + 
+fit.b5 <- lm(I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + loan_amount + 
                total_credit_utilized + num_total_cc_accounts, data = project)
-drop1(fit.b5, I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + 
-        installment + loan_purpose + term + application_type + loan_amount + 
+drop1(fit.b5, I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + loan_purpose + term + application_type + loan_amount + 
         total_credit_utilized + num_total_cc_accounts, test = "F")
 # remove application_type
-fit.b6 <- lm(I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + 
-               installment + loan_purpose + term + loan_amount + 
+fit.b6 <- lm(I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + loan_purpose + term + loan_amount + 
                total_credit_utilized + num_total_cc_accounts, data = project)
-drop1(fit.b6, I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + 
-        installment + loan_purpose + term + loan_amount + 
+drop1(fit.b6, I(interest_rate^0.5) ~ grade + total_credit_limit_log + debt_to_income + loan_purpose + term + loan_amount + 
         total_credit_utilized + num_total_cc_accounts, test = "F")
 
 # exhaustive selection with table
 exhaustive.selection <- regsubsets(x = cbind(project$grade , project$annual_income_log , project$total_credit_lines , 
                                              as.factor(project$num_historical_failed_to_pay) , project$total_credit_limit_log , project$debt_to_income , 
-                                             project$installment , project$loan_purpose , project$term , project$application_type , 
+                                             project$loan_purpose , project$term , project$application_type , 
                                              project$homeownership , project$loan_amount , as.factor(project$public_record_bankrupt) , 
                                              project$total_credit_utilized , project$num_total_cc_accounts), y = I(project$interest_rate^0.5), method = "exhaustive", all.best = FALSE, nbest = 2)
 summary(exhaustive.selection)
@@ -315,49 +291,49 @@ cor(project[,c("annual_income_log", "total_credit_lines", "total_credit_limit_lo
 fit.full.f1 <- lm(interest_rate ~ 1, data = project)
 add1(fit.full.f1, interest_rate ~ grade + annual_income + total_credit_lines + 
        as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 # add grade
 fit.full.f2 <- lm(interest_rate ~ grade, data = project)
 add1(fit.full.f2, interest_rate ~ grade + annual_income + total_credit_lines + 
        as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 # add term
 fit.full.f3 <- lm(interest_rate ~ grade + term, data = project)
 add1(fit.full.f3, interest_rate ~ grade + annual_income + total_credit_lines + 
        as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 # add total_credit_limit
 fit.full.f4 <- lm(interest_rate ~ grade + total_credit_limit + term, data = project)
 add1(fit.full.f4, interest_rate ~ grade + annual_income + total_credit_lines + 
        as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 # add debt_to_income
 fit.full.f5 <- lm(interest_rate ~ grade + total_credit_limit + debt_to_income + term, data = project)
 add1(fit.full.f5, interest_rate ~ grade + annual_income + total_credit_lines + 
        as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 # add num_total_cc_accounts
 fit.full.f6 <- lm(interest_rate ~ grade + total_credit_limit + debt_to_income + term + num_total_cc_accounts, data = project)
 add1(fit.full.f6, interest_rate ~ grade + annual_income + total_credit_lines + 
        as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 # add total_credit_utilized
 fit.full.f7 <- lm(interest_rate ~ grade + total_credit_limit + debt_to_income + term + total_credit_utilized + num_total_cc_accounts, data = project)
 add1(fit.full.f7, interest_rate ~ grade + annual_income + total_credit_lines + 
        as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 # add application_type
@@ -365,7 +341,7 @@ fit.full.f8 <- lm(interest_rate ~ grade + total_credit_limit + debt_to_income + 
                     total_credit_utilized + num_total_cc_accounts, data = project)
 add1(fit.full.f8, interest_rate ~ grade + annual_income + total_credit_lines + 
        as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income + 
-       installment + loan_purpose + term + application_type + 
+       loan_purpose + term + application_type + 
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
 
@@ -373,60 +349,60 @@ add1(fit.full.f8, interest_rate ~ grade + annual_income + total_credit_lines +
 
 drop1(fit.full, interest_rate ~ grade + annual_income + total_credit_lines + 
         as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income + 
-        installment + loan_purpose + term + application_type + 
+        loan_purpose + term + application_type + 
         homeownership + loan_amount + as.factor(public_record_bankrupt) + 
         total_credit_utilized + num_total_cc_accounts, test = "F")
 #drop num_historical_failed_to_pay
 fit.full.b1 <- lm(interest_rate ~ grade + annual_income + total_credit_lines + total_credit_limit + debt_to_income + 
-                    installment + loan_purpose + term + application_type + 
+                    loan_purpose + term + application_type + 
                     homeownership + loan_amount + as.factor(public_record_bankrupt) + 
                     total_credit_utilized + num_total_cc_accounts, data = project)
 drop1(fit.full.b1, interest_rate ~ grade + annual_income + total_credit_lines + total_credit_limit + debt_to_income + 
-        installment + loan_purpose + term + application_type + 
+        loan_purpose + term + application_type + 
         homeownership + loan_amount + as.factor(public_record_bankrupt) + 
         total_credit_utilized + num_total_cc_accounts, test = "F")
 # drop annual_income
 fit.full.b2 <- lm(interest_rate ~ grade + total_credit_lines + total_credit_limit + debt_to_income + 
-                    installment + loan_purpose + term + application_type + 
+                    loan_purpose + term + application_type + 
                     homeownership + loan_amount + as.factor(public_record_bankrupt) + 
                     total_credit_utilized + num_total_cc_accounts, data = project)
 drop1(fit.full.b2, interest_rate ~ grade + total_credit_lines + total_credit_limit + debt_to_income + 
-        installment + loan_purpose + term + application_type + 
+        loan_purpose + term + application_type + 
         homeownership + loan_amount + as.factor(public_record_bankrupt) + 
         total_credit_utilized + num_total_cc_accounts, test = "F")
 # drop homeownership
 fit.full.b3 <- lm(interest_rate ~ grade + total_credit_lines + total_credit_limit + debt_to_income + 
-                    installment + loan_purpose + term + application_type + loan_amount + as.factor(public_record_bankrupt) + 
+                    loan_purpose + term + application_type + loan_amount + as.factor(public_record_bankrupt) + 
                     total_credit_utilized + num_total_cc_accounts, data = project)
 drop1(fit.full.b3, interest_rate ~ grade + total_credit_lines + total_credit_limit + debt_to_income + 
-        installment + loan_purpose + term + application_type + loan_amount + as.factor(public_record_bankrupt) + 
+        loan_purpose + term + application_type + loan_amount + as.factor(public_record_bankrupt) + 
         total_credit_utilized + num_total_cc_accounts, test = "F")
 # remove total_credit_lines
 fit.full.b4 <- lm(interest_rate ~ grade + total_credit_limit + debt_to_income + 
-                    installment + loan_purpose + term + application_type + loan_amount + as.factor(public_record_bankrupt) + 
+                    loan_purpose + term + application_type + loan_amount + as.factor(public_record_bankrupt) + 
                     total_credit_utilized + num_total_cc_accounts, data = project)
 drop1(fit.full.b4, interest_rate ~ grade + total_credit_limit + debt_to_income + 
-        installment + loan_purpose + term + application_type + loan_amount + as.factor(public_record_bankrupt) + 
+        loan_purpose + term + application_type + loan_amount + as.factor(public_record_bankrupt) + 
         total_credit_utilized + num_total_cc_accounts, test = "F")
 # drop public_record_bankrupt
 fit.full.b5 <- lm(interest_rate ~ grade + total_credit_limit + debt_to_income + 
-                    installment + loan_purpose + term + application_type + loan_amount + 
+                    loan_purpose + term + application_type + loan_amount + 
                     total_credit_utilized + num_total_cc_accounts, data = project)
 drop1(fit.full.b5, interest_rate ~ grade + total_credit_limit + debt_to_income + 
-        installment + loan_purpose + term + application_type + loan_amount + 
+        loan_purpose + term + application_type + loan_amount + 
         total_credit_utilized + num_total_cc_accounts, test = "F")
 # drop application_type
 fit.full.b6 <- lm(interest_rate ~ grade + total_credit_limit + debt_to_income + 
-                    installment + loan_purpose + term + loan_amount + 
+                    loan_purpose + term + loan_amount + 
                     total_credit_utilized + num_total_cc_accounts, data = project)
 drop1(fit.full.b6, interest_rate ~ grade + total_credit_limit + debt_to_income + 
-        installment + loan_purpose + term + loan_amount + 
+        loan_purpose + term + loan_amount + 
         total_credit_utilized + num_total_cc_accounts, test = "F")
 
 # exhaustive table
 exhaustive.selection <- regsubsets(x = cbind(project$grade , project$annual_income , project$total_credit_lines , 
                                              as.factor(project$num_historical_failed_to_pay) , project$total_credit_limit , project$debt_to_income , 
-                                             project$installment , project$loan_purpose , project$term , project$application_type , 
+                                             project$loan_purpose , project$term , project$application_type , 
                                              project$homeownership , project$loan_amount , as.factor(project$public_record_bankrupt) , 
                                              project$total_credit_utilized , project$num_total_cc_accounts), y = project$interest_rate, method = "exhaustive", all.best = FALSE, nbest = 2)
 summary(exhaustive.selection)
