@@ -75,8 +75,7 @@ plot(fitted(fit), residuals, main = "Residuals vs predicted", xlab = "predicted"
 
 # Plot interest_rate against annual_income
 plot(project$annual_income, project$interest_rate,
-     main = "Interest Rate vs. Annual Income",
-     xlab = "Annual Income", ylab = "Interest Rate", pch = 20)
+     main = "Interest Rate vs. Annual Income",xlab = "Annual Income", ylab = "Interest Rate", pch = 20)
 # the trend between annual income and interest rate has log(x)
 
 # Optional: Fit a linear model and add a regression line to the plot
@@ -88,9 +87,9 @@ project$annual_income_log <- log(project$annual_income)
 
 # (Optional) Fit the model with the transformed 'annual_income'
 fit <- lm(interest_rate ~ grade + annual_income_log + total_credit_lines + 
-            num_historical_failed_to_pay + total_credit_limit + debt_to_income + 
+            as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income + 
             installment + loan_purpose + term + application_type + 
-            homeownership + loan_amount + public_record_bankrupt + 
+            homeownership + loan_amount + as.factor(public_record_bankrupt) + 
             total_credit_utilized + num_total_cc_accounts, 
           data = project)
 residuals <- residuals(fit)
@@ -114,9 +113,9 @@ project <- na.omit(project)
 
 # (Optional) Fit the model with the transformed 'annual_income'
 fit <- lm(interest_rate ~ grade + annual_income_log + total_credit_lines + 
-            num_historical_failed_to_pay + total_credit_limit_log + debt_to_income + 
+            as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
             installment + loan_purpose + term + application_type + 
-            homeownership + loan_amount + public_record_bankrupt + 
+            homeownership + loan_amount + as.factor(public_record_bankrupt) + 
             total_credit_utilized + num_total_cc_accounts, 
           data = project)
 residuals <- residuals(fit)
@@ -137,9 +136,9 @@ library(MASS)
 boxcox(fit, lambda = seq(-1,1 , by = 0.1))
 
 fit <- lm(I(interest_rate^0.5) ~ grade + annual_income_log + total_credit_lines + 
-            num_historical_failed_to_pay + total_credit_limit_log + debt_to_income + 
+            as.factor(num_historical_failed_to_pay) + total_credit_limit_log + debt_to_income + 
             installment + loan_purpose + term + application_type + 
-            homeownership + loan_amount + public_record_bankrupt + 
+            homeownership + loan_amount + as.factor(public_record_bankrupt) + 
             total_credit_utilized + num_total_cc_accounts, 
           data = project)
 
