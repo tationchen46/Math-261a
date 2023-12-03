@@ -22,13 +22,14 @@ print(missing_elements)
 project <- na.omit(project)
 
 #fit the full model
-fit.full <- lm(interest_rate ~ grade + annual_income + total_credit_lines + 
+fit.full <- lm(log(interest_rate) ~ annual_income + total_credit_lines + 
             as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income  + loan_purpose + term + application_type + 
             homeownership + loan_amount + as.factor(public_record_bankrupt) + 
             total_credit_utilized + num_total_cc_accounts, data = project)
 summary(fit.full)
 #plot(project)
-
+library(MASS)
+boxcox(fit.full, lambda = seq(-1,1 , by = 0.1))
 #VIFs
 library(car)
 vif(fit.full)
@@ -74,7 +75,7 @@ qqline(residuals)
 par(mfrow = c(1, 1))
 
 #fiited again residual
-plot(fitted(fit), residuals, main = "Residuals vs predicted", xlab = "predicted", ylab = "Residuals")
+plot(fitted(fit.full), residuals, main = "Residuals vs predicted", xlab = "predicted", ylab = "Residuals")
 
 # Plot interest_rate against annual_income
 plot(project$annual_income, project$interest_rate,
@@ -288,14 +289,14 @@ cor(project[,c("annual_income_log", "total_credit_lines", "total_credit_limit_lo
 # with full fit model
 
 # forward selection
-fit.full.f1 <- lm(interest_rate ~ 1, data = project)
-add1(fit.full.f1, interest_rate ~ grade + annual_income + total_credit_lines + 
+fit.full.f1 <- lm(log(interest_rate) ~ 1, data = project)
+add1(fit.full.f1, log(interest_rate) ~ annual_income + total_credit_lines + 
        as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income + 
-       loan_purpose + term + application_type + 
+       loan_purpose + term + application_type + installment +
        homeownership + loan_amount + as.factor(public_record_bankrupt) + 
        total_credit_utilized + num_total_cc_accounts, test = "F")
-# add grade
-fit.full.f2 <- lm(interest_rate ~ grade, data = project)
+# add num_historical_failed_to_pay
+fit.full.f2 <- lm(log(interest_rate) ~ as.factor(num_historical_failed_to_pay), data = project)
 add1(fit.full.f2, interest_rate ~ grade + annual_income + total_credit_lines + 
        as.factor(num_historical_failed_to_pay) + total_credit_limit + debt_to_income + 
        loan_purpose + term + application_type + 
@@ -417,4 +418,97 @@ MSRes <- SSRes/(6979-p)
 
 output <- cbind(p, Matrix, SSRes, MSRes, R2, AdjR2, Cp)
 colnames(output)[3:17] <- c("grade", "ai", "tclines", "nhftp", "tclimit", "dti", "i", "lp", "t", "at", "h", "la", "prb", "tcu", "ntcca") 
-output
+
+#Detected outlier
+#Find Leverage point
+#The final model is 
+final_model<-lm(I(log(interest_rate)) ~ term + total_credit_limit + debt_to_income + total_credit_utilized + total_credit_lines
+                + loan_amount + num_total_cc_accounts + num_historical_failed_to_pay + as.factor(loan_purpose),data = project
+)
+# Extract the design matrix (includes intercept by default)
+X <- model.matrix(final_model)
+# Compute the hat matrix
+H <- X %*% solve(t(X) %*% X) %*% t(X)
+#Extract diagonal elements(leverages)
+h_ii <- diag(H)
+# Calculate the threshold
+threshold <- 2 * (27 + 1) / 6979
+# Find leverage values that exceed the threshold
+high_leverage_points <- which(h_ii > threshold)
+# Print the indices of high leverage points
+print(high_leverage_points)
+length(high_leverage_points)
+#The deleted residual
+# Extract ordinary residuals
+ordinary_residuals <- residuals(final_model)
+# Extract hat values (diagonal of the hat matrix)
+hii <- lm.influence(final_model)$hat
+# Calculate PRESS residuals
+press_residuals <- ordinary_residuals / (1 - hii)
+#Cook's distance:
+# Calculate Cook's distances for the model
+cooks_distances <- cooks.distance(final_model)
+#Standardized residuals
+residuals <- residuals(final_model)
+sd_residuals <- sd(residuals)
+standardized_residuals <- residuals / (sd_residuals)
+large_standardized<-which(abs(standardized_residuals)>3)
+print(large_standardized)
+# Find indices of points where Cook's distance is greater than 1
+large_cooks_indices <- which(cooks_distances > 1)
+# Print the indices
+print(large_cooks_indices)
+#check new model without leverage points
+# Assuming your original dataset is 'project' and the model formula is as you provided earlier
+# And assuming 'high_leverage_points' contains the indices of the high leverage points
+
+# Remove high leverage points from the dataset
+project_new <- project[-high_leverage_points, ]
+project_without_standard<-project[-large_standardized,]
+
+# Refit the model with the new dataset
+final_model_new<-lm(I(log(interest_rate)) ~ term + total_credit_limit + debt_to_income + total_credit_utilized + total_credit_lines
+                + loan_amount + num_total_cc_accounts + num_historical_failed_to_pay + as.factor(loan_purpose),data = project_new
+)
+# You can then view the summary of the new model
+summary(final_model_new)
+
+final_model_without_standard<-lm(I(log(interest_rate)) ~ term + total_credit_limit + debt_to_income + total_credit_utilized + total_credit_lines
+                                 + loan_amount + num_total_cc_accounts + num_historical_failed_to_pay + as.factor(loan_purpose),data = project_without_standard
+)
+summary(final_model_without_standard)
+# Assuming 'project' has 'annual_income' and 'interest_rate' columns
+# And 'high_leverage_points' contains the indices of high leverage points
+
+# Create a new column in 'project' to identify high leverage points
+project$IsHighLeverage <- FALSE
+project$IsHighLeverage[high_leverage_points] <- TRUE
+
+# Plotting the scatterplot
+plot(project$total_credit_utilized, project$interest_rate, 
+     xlab = "Annual Income", ylab = "Interest Rate", 
+     col = ifelse(project$IsHighLeverage, "red", "black"),
+     pch = 20) # pch = 20 for solid circle points
+
+# Adding a legend to the plot
+legend("topright", legend = c("High Leverage", "Regular"), 
+       col = c("red", "black"), pch = 20)
+
+
+
+
+
+# Create a new column in 'project' to identify high leverage points
+project$stand <- FALSE
+project$stand[large_standardized] <- TRUE
+
+# Plotting the scatterplot
+plot(project$total_credit_utilized, project$interest_rate, 
+     xlab = "Annual Income", ylab = "Interest Rate", 
+     col = ifelse(project$stand, "green", "yellow"),
+     pch = 20) # pch = 20 for solid circle points
+
+# Adding a legend to the plot
+legend("topright", legend = c("High standardized", "Regular"), 
+       col = c("green", "yellow"), pch = 20)
+
