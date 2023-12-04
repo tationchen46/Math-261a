@@ -425,6 +425,7 @@ colnames(output)[3:17] <- c("grade", "ai", "tclines", "nhftp", "tclimit", "dti",
 final_model<-lm(I(log(interest_rate)) ~ term + total_credit_limit + debt_to_income + total_credit_utilized + total_credit_lines
                 + loan_amount + num_total_cc_accounts + num_historical_failed_to_pay + as.factor(loan_purpose),data = project
 )
+View(project)
 # Extract the design matrix (includes intercept by default)
 X <- model.matrix(final_model)
 # Compute the hat matrix
@@ -432,7 +433,7 @@ H <- X %*% solve(t(X) %*% X) %*% t(X)
 #Extract diagonal elements(leverages)
 h_ii <- diag(H)
 # Calculate the threshold
-threshold <- 2 * (27 + 1) / 6979
+threshold <- 2 * (21 + 1) / 6979
 # Find leverage values that exceed the threshold
 high_leverage_points <- which(h_ii > threshold)
 # Print the indices of high leverage points
